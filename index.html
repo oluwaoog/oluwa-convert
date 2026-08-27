@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oluwa Convert — Airtime & Data to Cash</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><nav class="nav">
+<div class="brand">Oluwa<span>Convert</span></div>
+<div><a href="#how">How it works</a><a href="#rates">Rates</a><button class="btn btn-primary" onclick="openModal()">Get Started</button></div>
+</nav></header>
+
+<main>
+<div class="hero">
+<div>
+<span class="badge">🇳🇬 Built for Nigeria</span>
+<h1>Turn your unused airtime & data into cash.</h1>
+<p>Convert eligible airtime and data bundles and request a payout directly to your Nigerian bank account.</p>
+<div class="hero-actions"><button class="btn btn-primary" onclick="document.getElementById('converter').scrollIntoView({behavior:'smooth'})">Convert Now</button><button class="btn btn-outline" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">How it works</button></div>
+<div class="trust"><span>🔒 Secure transactions</span><span>⚡ Fast processing</span><span>🏦 Bank payout</span></div>
+</div>
+
+<div class="card converter" id="converter">
+<div class="tabs"><button class="tab active" id="airTab" onclick="setType('airtime')">Airtime</button><button class="tab" id="dataTab" onclick="setType('data')">Data</button></div>
+<label>Network</label>
+<select id="network"><option>MTN</option><option>Airtel</option><option>Glo</option><option>9mobile</option></select>
+<label id="amountLabel">Airtime amount (₦)</label>
+<input class="field" id="amount" type="number" min="100" placeholder="e.g. 10,000" oninput="calculate()">
+<div class="estimate"><small>Estimated cash value</small><strong id="cash">₦0.00</strong></div>
+<label>Bank</label>
+<select id="bank"><option>Select bank</option><option>Access Bank</option><option>GTBank</option><option>Opay</option><option>Palmpay</option><option>UBA</option><option>Zenith Bank</option><option>Unity Bank</option></select>
+<label>Account number</label>
+<input class="field" id="account" inputmode="numeric" maxlength="10" placeholder="10-digit account number">
+<button class="btn btn-primary full" onclick="submitConversion()">Continue</button>
+<div class="note">This demo calculates an estimate only. Real airtime/data verification and payouts require a connected provider/API and payment infrastructure.</div>
+</div>
+</div>
+
+<section id="how">
+<div class="section-title"><h2>Simple, transparent process</h2><p>Everything customers need to understand before converting.</p></div>
+<div class="features">
+<div class="card feature"><div class="icon">📲</div><h3>1. Enter details</h3><p>Select your network and enter the airtime or data value you want to convert.</p></div>
+<div class="card feature"><div class="icon">✓</div><h3>2. Verify transfer</h3><p>In production, our backend verifies the submitted transaction before approving the payout.</p></div>
+<div class="card feature"><div class="icon">🏦</div><h3>3. Get paid</h3><p>Once approved, the customer's payout is sent to the verified Nigerian bank account.</p></div>
+</div>
+</section>
+
+<section id="rates">
+<div class="section-title"><h2>Sample conversion rates</h2><p>Demo rates — administrators can control live rates from the backend.</p></div>
+<div class="card rates"><table><thead><tr><th>Network</th><th>Airtime</th><th>Data</th></tr></thead><tbody>
+<tr><td>MTN</td><td class="rate">75%</td><td class="rate">70%</td></tr>
+<tr><td>Airtel</td><td class="rate">75%</td><td class="rate">70%</td></tr>
+<tr><td>Glo</td><td class="rate">72%</td><td class="rate">68%</td></tr>
+<tr><td>9mobile</td><td class="rate">70%</td><td class="rate">65%</td></tr>
+</tbody></table></div>
+</section>
+</main>
+
+<footer><div class="footer"><div><div class="brand">OluwaConvert</div><small>Airtime & data conversion platform.</small></div><small>© 2026 OluwaConvert. Demo frontend.</small></div></footer>
+
+<div class="modal" id="modal"><div class="modal-card"><button class="close" onclick="closeModal()">×</button><h2>Start converting</h2><p style="color:#64756f">Create an account in the production version to track conversions, payouts and transaction history.</p><button class="btn btn-primary full" onclick="closeModal();document.getElementById('converter').scrollIntoView({behavior:'smooth'})">Use Converter</button></div></div>
+
+<script src="script.js"></script>
+</body>
+</html>
