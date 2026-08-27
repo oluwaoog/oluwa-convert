@@ -30,7 +30,27 @@
 <input class="field" id="amount" type="number" min="100" placeholder="e.g. 10,000" oninput="calculate()">
 <div class="estimate"><small>Estimated cash value</small><strong id="cash">₦0.00</strong></div>
 <label>Bank</label>
-<select id="bank"><option>Select bank</option><option>Access Bank</option><option>GTBank</option><option>Opay</option><option>Palmpay</option><option>UBA</option><option>Zenith Bank</option><option>Unity Bank</option></select>
+<select id="bank">
+<option>Select bank</option>
+<option>Access Bank</option>
+<option>GTBank</option>
+<option>Opay</option>
+<option>Palmpay</option>
+<option>UBA</option>
+<option>Zenith Bank</option>
+<option>Unity Bank</option>
+</select>
+
+<label>Phone number</label>
+<input
+  class="field"
+  id="phone"
+  type="tel"
+  inputmode="numeric"
+  maxlength="11"
+  placeholder="08012345678"
+>
+
 <label>Account number</label>
 <input class="field" id="account" inputmode="numeric" maxlength="10" placeholder="10-digit account number">
 <button class="btn btn-primary full" onclick="submitConversion()">Continue</button>
