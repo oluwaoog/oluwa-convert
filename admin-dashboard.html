@@ -146,6 +146,26 @@
   border-color: #087f5b;
   box-shadow: 0 0 0 3px #087f5b1a;
 }
+ .table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.refresh-btn {
+  border: 0;
+  border-radius: 8px;
+  padding: 9px 14px;
+  background: #087f5b;
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.refresh-btn:hover {
+  opacity: 0.9;
+}   
     .action-btn {
   border: 0;
   border-radius: 7px;
@@ -220,7 +240,13 @@
 
   <div class="card table-card">
 
-    <h2>Recent Transactions</h2>
+  <div class="table-header">
+  <h2>Recent Transactions</h2>
+
+  <button class="refresh-btn" onclick="loadTransactions()">
+    ↻ Refresh
+  </button>
+</div>
     
 <div class="search-box">
   <input
