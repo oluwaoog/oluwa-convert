@@ -129,6 +129,30 @@
       padding: 30px;
       color: #64756f;
     }
+    .action-btn {
+  border: 0;
+  border-radius: 7px;
+  padding: 7px 10px;
+  margin: 2px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.verify {
+  background: #dff5ed;
+  color: #087f5b;
+}
+
+.reject {
+  background: #ffe4e1;
+  color: #b42318;
+}
+
+.paid {
+  background: #e7f0ff;
+  color: #185abc;
+}
 
     @media (max-width: 700px) {
       .stats {
@@ -192,14 +216,15 @@
           <th>Payout</th>
           <th>Bank</th>
           <th>Account</th>
-          <th>Status</th>
+         <th>Status</th>
+<th>Action</th>
         </tr>
       </thead>
 
       <tbody id="transactionsBody">
 
         <tr>
-          <td colspan="8" class="empty">
+        <td colspan="9" class="empty">
             Loading transactions...
           </td>
         </tr>
@@ -275,9 +300,9 @@
 
         body.innerHTML = `
           <tr>
-            <td colspan="8" class="empty">
-              No transactions found.
-            </td>
+  <td colspan="9" class="empty">
+  No transactions found.
+</td>
           </tr>
         `;
 
@@ -306,23 +331,41 @@
 
           <td>****${escapeHtml(t.account_last4)}</td>
 
-          <td>
-            <span class="status">
-              ${escapeHtml(t.status)}
-            </span>
-          </td>
+       <td>
+  <span class="status">
+    ${escapeHtml(t.status)}
+  </span>
+</td>
 
-        </tr>
+<td>
+  ${t.status === "PENDING" ? `
+    <button class="action-btn verify"
+      onclick="updateTransaction('${escapeHtml(t.reference)}', 'VERIFIED')">
+      Verify
+    </button>
 
+    <button class="action-btn reject"
+      onclick="updateTransaction('${escapeHtml(t.reference)}', 'REJECTED')">
+      Reject
+    </button>
+  ` : ""}
+
+  ${t.status === "VERIFIED" ? `
+    <button class="action-btn paid"
+      onclick="updateTransaction('${escapeHtml(t.reference)}', 'PAID')">
+      Mark Paid
+    </button>
+  ` : ""}
+</td>
       `).join("");
 
     } catch (error) {
 
       body.innerHTML = `
         <tr>
-          <td colspan="8" class="empty">
-            ${escapeHtml(error.message)}
-          </td>
+        <td colspan="9" class="empty">
+  ${escapeHtml(error.message)}
+</td>
         </tr>
       `;
 
@@ -339,6 +382,45 @@
       .replaceAll("'", "&#039;");
 
   }
+  async function updateTransaction(reference, status) {
+  const action =
+    status === "VERIFIED"
+      ? "verify"
+      : status === "REJECTED"
+        ? "reject"
+        : "mark this transaction as paid";
+
+  if (!confirm(`Are you sure you want to ${action}?`)) {
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/admin-update-transaction", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        reference,
+        status
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Unable to update transaction");
+    }
+
+    alert(`Transaction updated to ${status}.`);
+
+    await loadTransactions();
+
+  } catch (error) {
+    alert(error.message);
+  }
+}
 
 checkAdminSession().then((authenticated) => {
   if (authenticated) {
