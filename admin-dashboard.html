@@ -214,28 +214,38 @@
 
 <script>
 
-  const token = sessionStorage.getItem("adminToken");
+  async function checkAdminSession() {
+  try {
+    const response = await fetch("/api/admin-transactions");
 
-  if (!token) {
+    if (response.status === 401) {
+      window.location.href = "/admin.html";
+      return false;
+    }
+
+    return response.ok;
+  } catch (error) {
     window.location.href = "/admin.html";
+    return false;
   }
+}
+ async function logout() {
+  await fetch("/api/admin-logout", {
+    method: "POST",
+    credentials: "include"
+  });
 
-  function logout() {
-    sessionStorage.removeItem("adminToken");
-    window.location.href = "/admin.html";
-  }
-
+  window.location.href = "/admin.html";
+}
   async function loadTransactions() {
 
     const body = document.getElementById("transactionsBody");
 
     try {
 
-      const response = await fetch("/api/admin-transactions", {
-        headers: {
-          "Authorization": "Bearer " + token
-        }
-      });
+     const response = await fetch("/api/admin-transactions", {
+  credentials: "include"
+});
 
       const data = await response.json();
 
@@ -330,8 +340,11 @@
 
   }
 
-  loadTransactions();
-
+checkAdminSession().then((authenticated) => {
+  if (authenticated) {
+    loadTransactions();
+  }
+});
 </script>
 
 </body>
