@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OluwaConvert Admin Dashboard</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+      background: #f5faf8;
+      color: #09251d;
+    }
+
+    header {
+      background: white;
+      border-bottom: 1px solid #e3ece8;
+      padding: 16px 20px;
+    }
+
+    .nav {
+      max-width: 1200px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      font-size: 22px;
+      font-weight: 900;
+      color: #087f5b;
+    }
+
+    .logout {
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 15px;
+      background: #09251d;
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 35px auto;
+      padding: 0 20px;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #64756f;
+      margin-top: 0;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin: 25px 0;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e3ece8;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 25px #09251d0d;
+    }
+
+    .stat-title {
+      font-size: 13px;
+      color: #64756f;
+      font-weight: 700;
+    }
+
+    .stat-value {
+      display: block;
+      margin-top: 8px;
+      font-size: 28px;
+      font-weight: 900;
+      color: #087f5b;
+    }
+
+    .table-card {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 850px;
+    }
+
+    th,
+    td {
+      padding: 13px;
+      text-align: left;
+      border-bottom: 1px solid #e3ece8;
+      font-size: 13px;
+    }
+
+    th {
+      background: #f6faf8;
+      font-weight: 900;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #fff4cc;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 30px;
+      color: #64756f;
+    }
+
+    @media (max-width: 700px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="nav">
+    <div class="brand">OluwaConvert Admin</div>
+
+    <button class="logout" onclick="logout()">
+      Log Out
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <h1>Dashboard</h1>
+
+  <p class="subtitle">
+    Manage OluwaConvert transactions.
+  </p>
+
+  <div class="stats">
+
+    <div class="card">
+      <span class="stat-title">Total Transactions</span>
+      <strong class="stat-value" id="totalTransactions">0</strong>
+    </div>
+
+    <div class="card">
+      <span class="stat-title">Pending</span>
+      <strong class="stat-value" id="pendingTransactions">0</strong>
+    </div>
+
+    <div class="card">
+      <span class="stat-title">Total Payout</span>
+      <strong class="stat-value" id="totalPayout">₦0.00</strong>
+    </div>
+
+  </div>
+
+  <div class="card table-card">
+
+    <h2>Recent Transactions</h2>
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Reference</th>
+          <th>Type</th>
+          <th>Network</th>
+          <th>Amount</th>
+          <th>Payout</th>
+          <th>Bank</th>
+          <th>Account</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody id="transactionsBody">
+
+        <tr>
+          <td colspan="8" class="empty">
+            Loading transactions...
+          </td>
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</main>
+
+<script>
+
+  const token = sessionStorage.getItem("adminToken");
+
+  if (!token) {
+    window.location.href = "/admin.html";
+  }
+
+  function logout() {
+    sessionStorage.removeItem("adminToken");
+    window.location.href = "/admin.html";
+  }
+
+  async function loadTransactions() {
+
+    const body = document.getElementById("transactionsBody");
+
+    try {
+
+      const response = await fetch("/api/admin-transactions", {
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to load transactions");
+      }
+
+      const transactions = data.transactions || [];
+
+      document.getElementById("totalTransactions").textContent =
+        transactions.length;
+
+      document.getElementById("pendingTransactions").textContent =
+        transactions.filter(t => t.status === "PENDING").length;
+
+      const totalPayout = transactions.reduce(
+        (sum, t) => sum + Number(t.payout || 0),
+        0
+      );
+
+      document.getElementById("totalPayout").textContent =
+        "₦" + totalPayout.toLocaleString("en-NG", {
+          minimumFractionDigits: 2
+        });
+
+      if (!transactions.length) {
+
+        body.innerHTML = `
+          <tr>
+            <td colspan="8" class="empty">
+              No transactions found.
+            </td>
+          </tr>
+        `;
+
+        return;
+      }
+
+      body.innerHTML = transactions.map(t => `
+
+        <tr>
+
+          <td>${escapeHtml(t.reference)}</td>
+
+          <td>${escapeHtml(t.type)}</td>
+
+          <td>${escapeHtml(t.network)}</td>
+
+          <td>₦${Number(t.amount).toLocaleString("en-NG", {
+            minimumFractionDigits: 2
+          })}</td>
+
+          <td>₦${Number(t.payout).toLocaleString("en-NG", {
+            minimumFractionDigits: 2
+          })}</td>
+
+          <td>${escapeHtml(t.bank)}</td>
+
+          <td>****${escapeHtml(t.account_last4)}</td>
+
+          <td>
+            <span class="status">
+              ${escapeHtml(t.status)}
+            </span>
+          </td>
+
+        </tr>
+
+      `).join("");
+
+    } catch (error) {
+
+      body.innerHTML = `
+        <tr>
+          <td colspan="8" class="empty">
+            ${escapeHtml(error.message)}
+          </td>
+        </tr>
+      `;
+
+    }
+  }
+
+  function escapeHtml(value) {
+
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  }
+
+  loadTransactions();
+
+</script>
+
+</body>
+</html>
