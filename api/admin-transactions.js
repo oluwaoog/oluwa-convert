@@ -10,6 +10,17 @@ function createAdminToken() {
     .digest("hex");
 }
 
+function getCookie(request, name) {
+  const cookies = request.headers.cookie || "";
+
+  const match = cookies
+    .split(";")
+    .map(cookie => cookie.trim())
+    .find(cookie => cookie.startsWith(name + "="));
+
+  return match ? match.substring(name.length + 1) : null;
+}
+
 export default async function handler(request, response) {
   if (request.method !== "GET") {
     return response.status(405).json({
@@ -17,18 +28,17 @@ export default async function handler(request, response) {
     });
   }
 
-  const authorization = request.headers.authorization || "";
+  const session = getCookie(request, "admin_session");
 
-  if (!authorization.startsWith("Bearer ")) {
+  if (!session) {
     return response.status(401).json({
       error: "Unauthorized"
     });
   }
 
-  const token = authorization.slice(7);
   const expectedToken = createAdminToken();
 
-  if (token !== expectedToken) {
+  if (session !== expectedToken) {
     return response.status(401).json({
       error: "Invalid admin session"
     });
