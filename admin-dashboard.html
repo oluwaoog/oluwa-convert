@@ -190,6 +190,73 @@
   background: #e7f0ff;
   color: #185abc;
 }
+    .details {
+  background: #f1f3f5;
+  color: #09251d;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 37, 29, 0.55);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 550px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.modal-header h2 {
+  margin: 0;
+}
+
+.close-modal {
+  border: 0;
+  background: #f1f3f5;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e3ece8;
+}
+
+.detail-label {
+  color: #64756f;
+  font-weight: 700;
+}
+
+.detail-value {
+  font-weight: 800;
+  text-align: right;
+  word-break: break-word;
+}
 
     @media (max-width: 700px) {
       .stats {
@@ -296,6 +363,22 @@
 
 </main>
 
+<div class="modal" id="transactionModal">
+  <div class="modal-content">
+
+    <div class="modal-header">
+      <h2>Transaction Details</h2>
+
+      <button class="close-modal" onclick="closeTransactionDetails()">
+        ×
+      </button>
+    </div>
+
+    <div id="transactionDetails"></div>
+
+  </div>
+</div>
+
 <script>
 
   async function checkAdminSession() {
@@ -397,6 +480,12 @@
 </td>
 
 <td>
+  <button
+    class="action-btn details"
+    onclick='showTransactionDetails(${JSON.stringify(t)})'>
+    View Details
+  </button>
+
   ${t.status === "PENDING" ? `
     <button class="action-btn verify"
       onclick="updateTransaction('${escapeHtml(t.reference)}', 'VERIFIED')">
@@ -465,6 +554,65 @@
     row.style.display =
       matchesSearch && matchesStatus ? "" : "none";
   });
+}
+ function showTransactionDetails(t) {
+  const details = document.getElementById("transactionDetails");
+
+  details.innerHTML = `
+    <div class="detail-row">
+      <span class="detail-label">Reference</span>
+      <span class="detail-value">${escapeHtml(t.reference)}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Type</span>
+      <span class="detail-value">${escapeHtml(t.type)}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Network</span>
+      <span class="detail-value">${escapeHtml(t.network)}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Amount</span>
+      <span class="detail-value">
+        ₦${Number(t.amount || 0).toLocaleString("en-NG", {
+          minimumFractionDigits: 2
+        })}
+      </span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Payout</span>
+      <span class="detail-value">
+        ₦${Number(t.payout || 0).toLocaleString("en-NG", {
+          minimumFractionDigits: 2
+        })}
+      </span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Bank</span>
+      <span class="detail-value">${escapeHtml(t.bank)}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Account</span>
+      <span class="detail-value">****${escapeHtml(t.account_last4)}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Status</span>
+      <span class="detail-value">${escapeHtml(t.status)}</span>
+    </div>
+  `;
+
+  document.getElementById("transactionModal").style.display = "flex";
+}
+
+function closeTransactionDetails() {
+  document.getElementById("transactionModal").style.display = "none";
 }
   async function updateTransaction(reference, status) {
   const action =
