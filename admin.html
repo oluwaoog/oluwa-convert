@@ -142,10 +142,7 @@
           throw new Error(data.error || "Login failed");
         }
 
-        sessionStorage.setItem("adminToken", data.token);
-
-        window.location.href = "/admin-dashboard.html";
-
+     window.location.href = "/admin-dashboard.html";
       } catch (error) {
         message.textContent = error.message;
         button.disabled = false;
