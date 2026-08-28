@@ -129,6 +129,23 @@
       padding: 30px;
       color: #64756f;
     }
+    .search-box {
+  margin: 15px 0 20px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d6e3de;
+  border-radius: 9px;
+  font-size: 14px;
+  outline: none;
+}
+
+.search-box input:focus {
+  border-color: #087f5b;
+  box-shadow: 0 0 0 3px #087f5b1a;
+}
     .action-btn {
   border: 0;
   border-radius: 7px;
@@ -204,7 +221,15 @@
   <div class="card table-card">
 
     <h2>Recent Transactions</h2>
-
+    
+<div class="search-box">
+  <input
+    type="text"
+    id="transactionSearch"
+    placeholder="Search by reference, phone, network or bank..."
+    oninput="filterTransactions()"
+  >
+</div>
     <table>
 
       <thead>
@@ -382,6 +407,21 @@
       .replaceAll("'", "&#039;");
 
   }
+  function filterTransactions() {
+  const search = document
+    .getElementById("transactionSearch")
+    .value
+    .toLowerCase()
+    .trim();
+
+  const rows = document.querySelectorAll("#transactionsBody tr");
+
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+
+    row.style.display = text.includes(search) ? "" : "none";
+  });
+}
   async function updateTransaction(reference, status) {
   const action =
     status === "VERIFIED"
