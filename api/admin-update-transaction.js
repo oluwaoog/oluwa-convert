@@ -85,6 +85,13 @@ export default async function handler(request, response) {
     "REJECTED"
   ];
 
+  const allowedTransitions = {
+    PENDING: ["PENDING", "VERIFIED", "REJECTED"],
+    VERIFIED: ["VERIFIED", "PAID", "REJECTED"],
+    PAID: ["PAID"],
+    REJECTED: ["REJECTED"]
+  };
+
   if (!reference || !status) {
     return response.status(400).json({
       error: "Reference and status are required"
@@ -98,6 +105,39 @@ export default async function handler(request, response) {
   }
 
   try {
+    const currentTransaction = await sql`
+      SELECT
+        id,
+        reference,
+        type,
+        network,
+        amount,
+        rate,
+        payout,
+        bank,
+        account_last4,
+        phone,
+        status,
+        created_at
+      FROM transactions
+      WHERE reference = ${reference}
+      LIMIT 1
+    `;
+
+    if (currentTransaction.length === 0) {
+      return response.status(404).json({
+        error: "Transaction not found"
+      });
+    }
+
+    const currentStatus = currentTransaction[0].status;
+
+    if (!allowedTransitions[currentStatus]?.includes(status)) {
+      return response.status(409).json({
+        error: `Cannot change transaction from ${currentStatus} to ${status}`
+      });
+    }
+
     const result = await sql`
       UPDATE transactions
       SET status = ${status}
@@ -116,12 +156,6 @@ export default async function handler(request, response) {
         status,
         created_at
     `;
-
-    if (result.length === 0) {
-      return response.status(404).json({
-        error: "Transaction not found"
-      });
-    }
 
     response.setHeader("Cache-Control", "no-store");
 
