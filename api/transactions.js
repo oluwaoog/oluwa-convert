@@ -9,10 +9,93 @@ const rates = {
   "9mobile": { airtime: 0.70, data: 0.65 }
 };
 
+async function checkRateLimit(ipAddress) {
+  const rateLimitKey = `transactions:${ipAddress}`;
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - 60 * 1000);
+  const expiresAt = new Date(now.getTime() + 60 * 1000);
+
+  const result = await sql`
+    INSERT INTO api_rate_limits (
+      rate_limit_key,
+      window_start,
+      request_count,
+      expires_at
+    )
+    VALUES (
+      ${rateLimitKey},
+      ${now},
+      1,
+      ${expiresAt}
+    )
+    ON CONFLICT (rate_limit_key)
+    DO UPDATE SET
+      window_start = CASE
+        WHEN api_rate_limits.window_start <= ${windowStart}
+        THEN ${now}
+        ELSE api_rate_limits.window_start
+      END,
+      request_count = CASE
+        WHEN api_rate_limits.window_start <= ${windowStart}
+        THEN 1
+        ELSE api_rate_limits.request_count + 1
+      END,
+      expires_at = CASE
+        WHEN api_rate_limits.window_start <= ${windowStart}
+        THEN ${expiresAt}
+        ELSE api_rate_limits.expires_at
+      END
+    RETURNING request_count, expires_at
+  `;
+
+  const requestCount = Number(result[0].request_count);
+  const currentExpiresAt = new Date(result[0].expires_at);
+
+  return {
+    allowed: requestCount <= 10,
+    retryAfterSeconds: Math.max(
+      1,
+      Math.ceil(
+        (currentExpiresAt.getTime() - now.getTime()) / 1000
+      )
+    )
+  };
+}
+
 export default async function handler(request, response) {
   if (request.method !== "POST") {
     return response.status(405).json({
       error: "Method not allowed"
+    });
+  }
+
+  const forwardedFor = request.headers["x-forwarded-for"];
+
+  const ipAddress =
+    forwardedFor?.split(",")[0]?.trim() ||
+    request.headers["x-real-ip"] ||
+    "unknown";
+
+  try {
+    const rateLimit = await checkRateLimit(ipAddress);
+
+    if (!rateLimit.allowed) {
+      response.setHeader(
+        "Retry-After",
+        String(rateLimit.retryAfterSeconds)
+      );
+
+      response.setHeader("Cache-Control", "no-store");
+
+      return response.status(429).json({
+        error: "Too many requests. Please try again later."
+      });
+    }
+  } catch (error) {
+    console.error("Rate limit error:", error);
+
+    return response.status(500).json({
+      error: "Unable to process request"
     });
   }
 
@@ -26,7 +109,10 @@ export default async function handler(request, response) {
     idempotencyKey
   } = request.body || {};
 
-  if (!idempotencyKey || !/^[a-zA-Z0-9-]{16,64}$/.test(idempotencyKey)) {
+  if (
+    !idempotencyKey ||
+    !/^[a-zA-Z0-9-]{16,64}$/.test(idempotencyKey)
+  ) {
     return response.status(400).json({
       error: "Invalid idempotency key"
     });
@@ -71,7 +157,6 @@ export default async function handler(request, response) {
   }
 
   try {
-    // Check whether this submission was already processed.
     const existingTransaction = await sql`
       SELECT
         id,
@@ -93,6 +178,8 @@ export default async function handler(request, response) {
 
     if (existingTransaction.length > 0) {
       const transaction = existingTransaction[0];
+
+      response.setHeader("Cache-Control", "no-store");
 
       return response.status(200).json({
         success: true,
@@ -150,8 +237,6 @@ export default async function handler(request, response) {
         )
       `;
     } catch (error) {
-      // If another request inserted the same idempotency key
-      // at the same time, return the transaction it created.
       if (error.code === "23505") {
         const duplicateTransaction = await sql`
           SELECT
@@ -173,6 +258,8 @@ export default async function handler(request, response) {
 
         if (duplicateTransaction.length > 0) {
           const transaction = duplicateTransaction[0];
+
+          response.setHeader("Cache-Control", "no-store");
 
           return response.status(200).json({
             success: true,
