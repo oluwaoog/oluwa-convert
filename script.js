@@ -1,4 +1,6 @@
 let type = "airtime";
+let currentIdempotencyKey = null;
+let isSubmitting = false;
 
 const rates = {
   MTN: { airtime: 0.75, data: 0.70 },
@@ -36,6 +38,10 @@ function calculate() {
 document.getElementById("network").addEventListener("change", calculate);
 
 async function submitConversion() {
+  if (isSubmitting) {
+    return;
+  }
+
   const network = document.getElementById("network").value;
   const amount = Number(document.getElementById("amount").value);
   const bank = document.getElementById("bank").value;
@@ -58,6 +64,21 @@ async function submitConversion() {
     return alert("Please enter a valid 10-digit account number.");
   }
 
+  const submitButton = document.querySelector(
+    'button[onclick="submitConversion()"]'
+  );
+
+  if (!currentIdempotencyKey) {
+    currentIdempotencyKey = crypto.randomUUID();
+  }
+
+  isSubmitting = true;
+
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = "Processing...";
+  }
+
   try {
     const response = await fetch("/api/transactions", {
       method: "POST",
@@ -70,7 +91,8 @@ async function submitConversion() {
         amount,
         bank,
         phone,
-        account
+        account,
+        idempotencyKey: currentIdempotencyKey
       })
     });
 
@@ -91,8 +113,17 @@ async function submitConversion() {
       "\nStatus: " +
       data.transaction.status
     );
+
+    currentIdempotencyKey = null;
   } catch (error) {
     alert("Something went wrong: " + error.message);
+  } finally {
+    isSubmitting = false;
+
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = "Continue";
+    }
   }
 }
 

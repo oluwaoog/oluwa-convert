@@ -22,8 +22,15 @@ export default async function handler(request, response) {
     amount,
     bank,
     account,
-    phone
+    phone,
+    idempotencyKey
   } = request.body || {};
+
+  if (!idempotencyKey || !/^[a-zA-Z0-9-]{16,64}$/.test(idempotencyKey)) {
+    return response.status(400).json({
+      error: "Invalid idempotency key"
+    });
+  }
 
   if (!network || !rates[network]) {
     return response.status(400).json({
@@ -63,18 +70,11 @@ export default async function handler(request, response) {
     });
   }
 
-  const rate = rates[network][type];
-  const payout = numericAmount * rate;
-
-  const reference =
-    "OC-" +
-    Date.now().toString(36).toUpperCase() +
-    "-" +
-    Math.random().toString(36).substring(2, 7).toUpperCase();
-
   try {
-    await sql`
-      INSERT INTO transactions (
+    // Check whether this submission was already processed.
+    const existingTransaction = await sql`
+      SELECT
+        id,
         reference,
         type,
         network,
@@ -84,24 +84,122 @@ export default async function handler(request, response) {
         bank,
         account_last4,
         phone,
-        status
-      )
-      VALUES (
-        ${reference},
-        ${type},
-        ${network},
-        ${numericAmount},
-        ${rate},
-        ${payout},
-        ${bank},
-        ${String(account).slice(-4)},
-        ${phone},
-        'PENDING'
-      )
+        status,
+        created_at
+      FROM transactions
+      WHERE idempotency_key = ${idempotencyKey}
+      LIMIT 1
     `;
+
+    if (existingTransaction.length > 0) {
+      const transaction = existingTransaction[0];
+
+      return response.status(200).json({
+        success: true,
+        duplicate: true,
+        transaction: {
+          id: transaction.reference,
+          type: transaction.type,
+          network: transaction.network,
+          amount: Number(transaction.amount),
+          rate: Number(transaction.rate),
+          payout: Number(transaction.payout),
+          bank: transaction.bank,
+          account: transaction.account_last4,
+          status: transaction.status
+        }
+      });
+    }
+
+    const rate = rates[network][type];
+    const payout = numericAmount * rate;
+
+    const reference =
+      "OC-" +
+      Date.now().toString(36).toUpperCase() +
+      "-" +
+      Math.random().toString(36).substring(2, 7).toUpperCase();
+
+    try {
+      await sql`
+        INSERT INTO transactions (
+          reference,
+          type,
+          network,
+          amount,
+          rate,
+          payout,
+          bank,
+          account_last4,
+          phone,
+          status,
+          idempotency_key
+        )
+        VALUES (
+          ${reference},
+          ${type},
+          ${network},
+          ${numericAmount},
+          ${rate},
+          ${payout},
+          ${bank},
+          ${String(account).slice(-4)},
+          ${phone},
+          'PENDING',
+          ${idempotencyKey}
+        )
+      `;
+    } catch (error) {
+      // If another request inserted the same idempotency key
+      // at the same time, return the transaction it created.
+      if (error.code === "23505") {
+        const duplicateTransaction = await sql`
+          SELECT
+            reference,
+            type,
+            network,
+            amount,
+            rate,
+            payout,
+            bank,
+            account_last4,
+            phone,
+            status,
+            created_at
+          FROM transactions
+          WHERE idempotency_key = ${idempotencyKey}
+          LIMIT 1
+        `;
+
+        if (duplicateTransaction.length > 0) {
+          const transaction = duplicateTransaction[0];
+
+          return response.status(200).json({
+            success: true,
+            duplicate: true,
+            transaction: {
+              id: transaction.reference,
+              type: transaction.type,
+              network: transaction.network,
+              amount: Number(transaction.amount),
+              rate: Number(transaction.rate),
+              payout: Number(transaction.payout),
+              bank: transaction.bank,
+              account: transaction.account_last4,
+              status: transaction.status
+            }
+          });
+        }
+      }
+
+      throw error;
+    }
+
+    response.setHeader("Cache-Control", "no-store");
 
     return response.status(201).json({
       success: true,
+      duplicate: false,
       transaction: {
         id: reference,
         type,
