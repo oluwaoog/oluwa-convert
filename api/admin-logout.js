@@ -10,6 +10,8 @@ export default function handler(request, response) {
     "admin_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0"
   );
 
+  response.setHeader("Cache-Control", "no-store");
+
   return response.status(200).json({
     success: true
   });

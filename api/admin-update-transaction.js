@@ -3,11 +3,51 @@ import { neon } from "@neondatabase/serverless";
 
 const sql = neon(process.env.DATABASE_URL);
 
-function createAdminToken() {
-  return crypto
-    .createHmac("sha256", process.env.ADMIN_SECRET)
-    .update("oluwa-convert-admin")
-    .digest("hex");
+function verifyAdminToken(token) {
+  if (!token || !process.env.ADMIN_SECRET) {
+    return false;
+  }
+
+  const parts = token.split(".");
+
+  if (parts.length !== 2) {
+    return false;
+  }
+
+  const [payload, signature] = parts;
+
+  try {
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.ADMIN_SECRET)
+      .update(payload)
+      .digest("base64url");
+
+    const signatureBuffer = Buffer.from(signature);
+    const expectedBuffer = Buffer.from(expectedSignature);
+
+    if (
+      signatureBuffer.length !== expectedBuffer.length ||
+      !crypto.timingSafeEqual(signatureBuffer, expectedBuffer)
+    ) {
+      return false;
+    }
+
+    const data = JSON.parse(
+      Buffer.from(payload, "base64url").toString("utf8")
+    );
+
+    if (data.role !== "admin") {
+      return false;
+    }
+
+    if (!Number.isFinite(data.expiresAt) || Date.now() >= data.expiresAt) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function getCookie(request, name) {
@@ -30,7 +70,7 @@ export default async function handler(request, response) {
 
   const session = getCookie(request, "admin_session");
 
-  if (!session || session !== createAdminToken()) {
+  if (!verifyAdminToken(session)) {
     return response.status(401).json({
       error: "Unauthorized"
     });
@@ -82,6 +122,8 @@ export default async function handler(request, response) {
         error: "Transaction not found"
       });
     }
+
+    response.setHeader("Cache-Control", "no-store");
 
     return response.status(200).json({
       success: true,

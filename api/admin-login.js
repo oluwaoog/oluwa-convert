@@ -1,10 +1,21 @@
 import crypto from "crypto";
 
 function createAdminToken() {
-  return crypto
+  const expiresAt = Date.now() + 60 * 60 * 1000; // 1 hour
+
+  const payload = Buffer.from(
+    JSON.stringify({
+      role: "admin",
+      expiresAt
+    })
+  ).toString("base64url");
+
+  const signature = crypto
     .createHmac("sha256", process.env.ADMIN_SECRET)
-    .update("oluwa-convert-admin")
-    .digest("hex");
+    .update(payload)
+    .digest("base64url");
+
+  return `${payload}.${signature}`;
 }
 
 export default function handler(request, response) {
@@ -40,8 +51,10 @@ export default function handler(request, response) {
 
   response.setHeader(
     "Set-Cookie",
-    `admin_session=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400`
+    `admin_session=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=3600`
   );
+
+  response.setHeader("Cache-Control", "no-store");
 
   return response.status(200).json({
     success: true
