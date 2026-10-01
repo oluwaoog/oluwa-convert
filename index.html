@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -7,29 +8,94 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header><nav class="nav">
+
+<header>
+<nav class="nav">
 <div class="brand">Oluwa<span>Convert</span></div>
-<div><a href="#how">How it works</a><a href="#rates">Rates</a><button class="btn btn-primary" onclick="openModal()">Get Started</button></div>
-</nav></header>
+<div>
+<a href="#how">How it works</a>
+<a href="#rates">Rates</a>
+<a href="#faq">FAQ</a>
+<a href="#contact">Contact</a>
+<button class="btn btn-primary" onclick="openModal()">Get Started</button>
+</div>
+</nav>
+</header>
 
 <main>
+
 <div class="hero">
 <div>
 <span class="badge">🇳🇬 Built for Nigeria</span>
+
 <h1>Turn your unused airtime & data into cash.</h1>
-<p>Convert eligible airtime and data bundles and request a payout directly to your Nigerian bank account.</p>
-<div class="hero-actions"><button class="btn btn-primary" onclick="document.getElementById('converter').scrollIntoView({behavior:'smooth'})">Convert Now</button><button class="btn btn-outline" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">How it works</button></div>
-<div class="trust"><span>🔒 Secure transactions</span><span>⚡ Fast processing</span><span>🏦 Bank payout</span></div>
+
+<p>
+Convert eligible airtime and data bundles and request a payout
+directly to your Nigerian bank account.
+</p>
+
+<div class="hero-actions">
+<button
+class="btn btn-primary"
+onclick="document.getElementById('converter').scrollIntoView({behavior:'smooth'})">
+Convert Now
+</button>
+
+<button
+class="btn btn-outline"
+onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">
+How it works </button>
+
+</div>
+
+<div class="trust">
+<span>🔒 Secure requests</span>
+<span>⚡ Fast request handling</span>
+<span>🏦 Nigerian bank support</span>
+</div>
 </div>
 
 <div class="card converter" id="converter">
-<div class="tabs"><button class="tab active" id="airTab" onclick="setType('airtime')">Airtime</button><button class="tab" id="dataTab" onclick="setType('data')">Data</button></div>
+
+<div class="tabs">
+<button class="tab active" id="airTab" onclick="setType('airtime')">
+Airtime
+</button>
+
+<button class="tab" id="dataTab" onclick="setType('data')">
+Data
+</button>
+</div>
+
 <label>Network</label>
-<select id="network"><option>MTN</option><option>Airtel</option><option>Glo</option><option>9mobile</option></select>
+
+<select id="network">
+<option>MTN</option>
+<option>Airtel</option>
+<option>Glo</option>
+<option>9mobile</option>
+</select>
+
 <label id="amountLabel">Airtime amount (₦)</label>
-<input class="field" id="amount" type="number" min="100" placeholder="e.g. 10,000" oninput="calculate()">
-<div class="estimate"><small>Estimated cash value</small><strong id="cash">₦0.00</strong></div>
+
+<input
+class="field"
+id="amount"
+type="number"
+min="100"
+placeholder="e.g. 10,000"
+oninput="calculate()"
+
+>
+
+<div class="estimate">
+<small>Estimated cash value</small>
+<strong id="cash">₦0.00</strong>
+</div>
+
 <label>Bank</label>
+
 <select id="bank">
 <option>Select bank</option>
 
@@ -68,46 +134,360 @@
 </select>
 
 <label>Phone number</label>
+
 <input
-  class="field"
-  id="phone"
-  type="tel"
-  inputmode="numeric"
-  maxlength="11"
-  placeholder="08012345678"
+class="field"
+id="phone"
+type="tel"
+inputmode="numeric"
+maxlength="11"
+placeholder="08012345678"
+
 >
 
 <label>Account number</label>
-<input class="field" id="account" inputmode="numeric" maxlength="10" placeholder="10-digit account number">
-<button class="btn btn-primary full" onclick="submitConversion()">Continue</button>
-<div class="note">This demo calculates an estimate only. Real airtime/data verification and payouts require a connected provider/API and payment infrastructure.</div>
+
+<input
+class="field"
+id="account"
+inputmode="numeric"
+maxlength="10"
+placeholder="10-digit account number"
+
+>
+
+<button
+class="btn btn-primary full"
+onclick="submitConversion()">
+Continue </button>
+
+<div class="note">
+Demo only: this version calculates estimates and records conversion
+requests. Real airtime/data verification and automated payouts require
+a connected provider/API and payment infrastructure.
+</div>
+
 </div>
 </div>
 
 <section id="how">
-<div class="section-title"><h2>Simple, transparent process</h2><p>Everything customers need to understand before converting.</p></div>
+
+<div class="section-title">
+<h2>Simple, transparent process</h2>
+
+<p>
+Here is how a conversion is intended to work.
+</p>
+</div>
+
 <div class="features">
-<div class="card feature"><div class="icon">📲</div><h3>1. Enter details</h3><p>Select your network and enter the airtime or data value you want to convert.</p></div>
-<div class="card feature"><div class="icon">✓</div><h3>2. Verify transfer</h3><p>In production, our backend verifies the submitted transaction before approving the payout.</p></div>
-<div class="card feature"><div class="icon">🏦</div><h3>3. Get paid</h3><p>Once approved, the customer's payout is sent to the verified Nigerian bank account.</p></div>
+
+<div class="card feature">
+<div class="icon">📲</div>
+
+<h3>1. Enter details</h3>
+
+<p>
+Select your network and enter the airtime or data value you want
+to convert.
+</p>
+</div>
+
+<div class="card feature">
+<div class="icon">✓</div>
+
+<h3>2. Verify transfer</h3>
+
+<p>
+Your submitted request is reviewed and the airtime or data transfer
+would be verified through a connected provider in the production
+version.
+</p>
+</div>
+
+<div class="card feature">
+<div class="icon">🏦</div>
+
+<h3>3. Receive payout</h3>
+
+<p>
+After successful verification and approval, the calculated payout
+would be sent to the verified Nigerian bank account.
+</p>
+</div>
+
 </div>
 </section>
 
 <section id="rates">
-<div class="section-title"><h2>Sample conversion rates</h2><p>Demo rates — administrators can control live rates from the backend.</p></div>
-<div class="card rates"><table><thead><tr><th>Network</th><th>Airtime</th><th>Data</th></tr></thead><tbody>
-<tr><td>MTN</td><td class="rate">75%</td><td class="rate">70%</td></tr>
-<tr><td>Airtel</td><td class="rate">75%</td><td class="rate">70%</td></tr>
-<tr><td>Glo</td><td class="rate">72%</td><td class="rate">68%</td></tr>
-<tr><td>9mobile</td><td class="rate">70%</td><td class="rate">65%</td></tr>
-</tbody></table></div>
+
+<div class="section-title">
+<h2>Sample conversion rates</h2>
+
+<p>
+Demo rates shown for illustration. Actual rates may change when
+live conversion infrastructure is connected.
+</p>
+</div>
+
+<div class="card rates">
+
+<table>
+<thead>
+<tr>
+<th>Network</th>
+<th>Airtime</th>
+<th>Data</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr>
+<td>MTN</td>
+<td class="rate">75%</td>
+<td class="rate">70%</td>
+</tr>
+
+<tr>
+<td>Airtel</td>
+<td class="rate">75%</td>
+<td class="rate">70%</td>
+</tr>
+
+<tr>
+<td>Glo</td>
+<td class="rate">72%</td>
+<td class="rate">68%</td>
+</tr>
+
+<tr>
+<td>9mobile</td>
+<td class="rate">70%</td>
+<td class="rate">65%</td>
+</tr>
+
+</tbody>
+</table>
+
+</div>
 </section>
+
+<section id="faq">
+
+<div class="section-title">
+<h2>Frequently asked questions</h2>
+
+<p>
+Common questions about OluwaConvert.
+</p>
+</div>
+
+<div class="features">
+
+<div class="card feature">
+<h3>What is the minimum conversion amount?</h3>
+
+<p>
+The minimum conversion amount is ₦100.
+</p>
+</div>
+
+<div class="card feature">
+<h3>Which networks are supported?</h3>
+
+<p>
+The current demo supports MTN, Airtel, Glo and 9mobile.
+</p>
+</div>
+
+<div class="card feature">
+<h3>Which banks are supported?</h3>
+
+<p>
+The converter includes a broad list of Nigerian banks and financial
+institutions. Actual payout availability will depend on the payment
+provider connected to the production system.
+</p>
+</div>
+
+<div class="card feature">
+<h3>Are the displayed rates guaranteed?</h3>
+
+<p>
+No. The displayed rates are demo rates for the current version of
+the website. Production rates may change.
+</p>
+</div>
+
+<div class="card feature">
+<h3>Is the payout system currently live?</h3>
+
+<p>
+No. The current public version is a demo. Automated airtime/data
+verification and bank payouts require the necessary provider and
+payment integrations.
+</p>
+</div>
+
+<div class="card feature">
+<h3>What happens after I submit a request?</h3>
+
+<p>
+The request is recorded with a transaction reference and can be
+reviewed through the administration system. Production verification
+and payout require the appropriate external integrations.
+</p>
+</div>
+
+</div>
+</section>
+
+<section id="contact">
+
+<div class="section-title">
+<h2>Contact & Support</h2>
+
+<p>
+Need help or have a question about a conversion request?
+</p>
+</div>
+
+<div class="card feature">
+
+<h3>OluwaConvert Support</h3>
+
+<p>
+For support, transaction questions, or feedback, please use the
+official support contact provided by OluwaConvert when the service
+is launched.
+</p>
+
+<p>
+<strong>Current status:</strong> Demo / development stage.
+</p>
+
+</div>
+</section>
+
+<section id="terms">
+
+<div class="section-title">
+<h2>Terms & Conditions</h2>
+</div>
+
+<div class="card feature">
+
+<p>
+OluwaConvert is currently provided as a demonstration platform.
+Conversion estimates, displayed rates, transaction records and
+workflow examples are for demonstration purposes unless and until
+the required production infrastructure is connected.
+</p>
+
+<p>
+Users should not transfer airtime, data or funds to OluwaConvert
+solely on the basis of this demonstration website. A live service
+will provide specific instructions, applicable fees, processing
+conditions, eligibility requirements and payout terms before
+customers use the production service.
+</p>
+
+<p>
+The minimum conversion amount shown on this website is ₦100.
+Displayed rates are examples and may change in a production
+environment.
+</p>
+
+</div>
+</section>
+
+<section id="privacy">
+
+<div class="section-title">
+<h2>Privacy Policy</h2>
+</div>
+
+<div class="card feature">
+
+<p>
+The demonstration converter collects information entered into the
+form, such as network, transaction amount, phone number and bank
+account details, for the purpose of demonstrating the transaction
+workflow.
+</p>
+
+<p>
+Only the information necessary for the demonstrated transaction
+workflow should be submitted. The production service will provide
+a complete privacy policy describing data collection, storage,
+security, retention, sharing and user rights before live customer
+operations begin.
+</p>
+
+<p>
+Do not submit sensitive information that is not required by the
+converter.
+</p>
+
+</div>
+</section>
+
 </main>
 
-<footer><div class="footer"><div><div class="brand">OluwaConvert</div><small>Airtime & data conversion platform.</small></div><small>© 2026 OluwaConvert. Demo frontend.</small></div></footer>
+<footer>
 
-<div class="modal" id="modal"><div class="modal-card"><button class="close" onclick="closeModal()">×</button><h2>Start converting</h2><p style="color:#64756f">Create an account in the production version to track conversions, payouts and transaction history.</p><button class="btn btn-primary full" onclick="closeModal();document.getElementById('converter').scrollIntoView({behavior:'smooth'})">Use Converter</button></div></div>
+<div class="footer">
+
+<div>
+<div class="brand">OluwaConvert</div>
+
+<small>
+Airtime & data conversion platform.
+</small>
+</div>
+
+<div>
+<small>
+<a href="#terms">Terms & Conditions</a>
+&nbsp; | &nbsp;
+<a href="#privacy">Privacy Policy</a>
+&nbsp; | &nbsp;
+<a href="#contact">Contact</a>
+</small>
+</div>
+
+<small>
+© 2026 OluwaConvert. Demo frontend.
+</small>
+
+</div>
+
+</footer>
+
+<div class="modal" id="modal">
+
+<div class="modal-card">
+
+<button class="close" onclick="closeModal()">×</button>
+
+<h2>Start converting</h2>
+
+<p style="color:#64756f">
+The current version is a demonstration. Production users will be
+able to track conversions, payouts and transaction history after
+the required account and payment infrastructure is connected.
+</p>
+
+<button
+class="btn btn-primary full"
+onclick="closeModal();document.getElementById('converter').scrollIntoView({behavior:'smooth'})">
+Use Converter </button>
+
+</div>
+</div>
 
 <script src="script.js"></script>
+
 </body>
 </html>
